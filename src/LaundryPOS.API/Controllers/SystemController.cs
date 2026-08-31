@@ -97,12 +97,20 @@ public class SystemController : BaseApiController
                 "apk add --no-cache bash git curl >/dev/null 2>&1 && " +
                 $"bash scripts/update.sh{(string.IsNullOrWhiteSpace(tag) ? "" : $" {tag}")} > scripts/update.log 2>&1";
 
+            // IMPORTANT: the sibling container is created by the HOST docker
+            // daemon (Docker-outside-of-Docker), so the bind mount must use the
+            // real host path, not "/workspace" (which is only how *this*
+            // container sees the repo). HOST_REPO_PATH is injected via
+            // docker-compose.yml from the host's $PWD at startup.
+            var hostRepoPath = Environment.GetEnvironmentVariable("HOST_REPO_PATH")
+                ?? throw new InvalidOperationException("HOST_REPO_PATH no está configurada.");
+
             await RunAsync("docker", new[]
             {
                 "run", "-d", "--rm",
                 "--name", UpdaterContainerName,
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
-                "-v", $"{RepoPath}:/workspace",
+                "-v", $"{hostRepoPath}:/workspace",
                 "-w", "/workspace",
                 "docker:27-cli",
                 "sh", "-c", innerCommand

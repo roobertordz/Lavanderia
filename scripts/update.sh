@@ -21,9 +21,17 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_DIR"
 
+# Load secrets from .env (gitignored) instead of hardcoding them here.
+if [ -f "$REPO_DIR/.env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    source "$REPO_DIR/.env"
+    set +a
+fi
+
 DB_CONTAINER="laundrypos-db"
 DB_USER="sa"
-DB_PASSWORD="YourStrong@Password123"
+DB_PASSWORD="${SA_PASSWORD:?SA_PASSWORD no está definida (revisa el archivo .env)}"
 DB_NAME="LaundryPOS"
 BACKUP_DIR_IN_CONTAINER="/var/opt/mssql/backup"
 HEALTH_URL="http://localhost:5002/api/system/version"
