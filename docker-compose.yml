@@ -3,12 +3,15 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: laundrypos-db
+    restart: unless-stopped
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=${SA_PASSWORD}
       - MSSQL_PID=Developer
     ports:
-      - "1433:1433"
+      # Solo localhost: nadie en la LAN necesita hablarle a SQL Server
+      # directamente, solo el propio host (backups, debug puntual).
+      - "127.0.0.1:1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:
@@ -21,7 +24,10 @@ services:
   mqtt:
     image: eclipse-mosquitto:2
     container_name: laundrypos-mqtt
+    restart: unless-stopped
     ports:
+      # Estos SÍ deben estar abiertos a la LAN: los ESP32/PLC de las
+      # máquinas necesitan alcanzar el broker desde la red local.
       - "1883:1883"
       - "9001:9001"
     volumes:
@@ -34,8 +40,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile.api
     container_name: laundrypos-api
+    restart: unless-stopped
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=LaundryPOS;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true
       - Jwt__Key=${JWT_KEY}
@@ -49,7 +56,9 @@ services:
       # from inside this container (which sees the repo as /workspace).
       - HOST_REPO_PATH=${PWD}
     ports:
-      - "5002:80"
+      # Solo localhost: el frontend (nginx) le habla por la red interna de
+      # docker; nadie en la LAN necesita golpear la API directamente.
+      - "127.0.0.1:5002:80"
     volumes:
       # Mounted so the API can trigger the manual self-update flow
       # (git fetch/checkout + docker compose rebuild) via SystemController.
@@ -69,7 +78,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile.web
     container_name: laundrypos-web
+    restart: unless-stopped
     ports:
+      # Abierto a la LAN: aquí se conectan las cajas/POS y el kiosco.
       - "3000:80"
     depends_on:
       - api

@@ -34,7 +34,12 @@ DB_USER="sa"
 DB_PASSWORD="${SA_PASSWORD:?SA_PASSWORD no está definida (revisa el archivo .env)}"
 DB_NAME="LaundryPOS"
 BACKUP_DIR_IN_CONTAINER="/var/opt/mssql/backup"
-HEALTH_URL="http://localhost:5002/api/system/version"
+# Por defecto asume que corre directamente en el host (localhost:5002, el
+# puerto publicado). Cuando corre dentro del contenedor hermano lanzado por
+# SystemController.ApplyUpdate, este viene sobreescrito vía "-e HEALTH_URL=..."
+# con el nombre DNS interno del servicio (ej. http://laundrypos-api/...),
+# porque desde ese contenedor "localhost" es él mismo, no el host.
+HEALTH_URL="${HEALTH_URL:-http://localhost:5002/api/system/version}"
 HEALTH_TIMEOUT_SECONDS=60
 
 TARGET_TAG="${1:-}"

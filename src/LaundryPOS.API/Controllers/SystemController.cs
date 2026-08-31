@@ -105,10 +105,23 @@ public class SystemController : BaseApiController
             var hostRepoPath = Environment.GetEnvironmentVariable("HOST_REPO_PATH")
                 ?? throw new InvalidOperationException("HOST_REPO_PATH no está configurada.");
 
+            // The sibling container needs to reach this API's health endpoint
+            // to verify the update. It gets its own network namespace, so
+            // "localhost" inside it does NOT reach the host or this container.
+            // Instead, join it to the same docker-compose network this
+            // container is on, and use the "laundrypos-api" DNS alias (which
+            // compose keeps pointing at whichever container is current, even
+            // after the rebuild that happens mid-update).
+            var networkName = (await RunAsync("docker",
+                new[] { "inspect", "laundrypos-api", "--format", "{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}" },
+                ct)).Trim();
+
             await RunAsync("docker", new[]
             {
                 "run", "-d", "--rm",
                 "--name", UpdaterContainerName,
+                "--network", networkName,
+                "-e", "HEALTH_URL=http://laundrypos-api/api/system/version",
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
                 "-v", $"{hostRepoPath}:/workspace",
                 "-w", "/workspace",
