@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LaundryPOS.API</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LaundryPOS.Application\LaundryPOS.Application.csproj" />
+    <ProjectReference Include="..\LaundryPOS.Infrastructure\LaundryPOS.Infrastructure.csproj" />
+    <ProjectReference Include="..\LaundryPOS.IoT\LaundryPOS.IoT.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/logs/
+.git/
+.vs/
+.vscode/
+*.user
+**/*.log
+.DS_Store
+**/.DS_Store

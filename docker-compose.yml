@@ -1,0 +1,68 @@
+services:
+  # ─── SQL Server ───
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: laundrypos-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Password123
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "YourStrong@Password123" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ─── MQTT Broker (Mosquitto) ───
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: laundrypos-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+
+  # ─── API Backend ───
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: laundrypos-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=LaundryPOS;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=true
+      - Jwt__Key=CHANGE-THIS-TO-A-SECURE-KEY-AT-LEAST-32-CHARS-LONG!!
+      - Jwt__Issuer=LaundryPOS
+      - Jwt__Audience=LaundryPOS.Client
+      - IoT__Mqtt__BrokerHost=mqtt
+      - IoT__Mqtt__BrokerPort=1883
+    ports:
+      - "5002:80"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+
+  # ─── Frontend ───
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    container_name: laundrypos-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+volumes:
+  sqlserver-data:
+  mosquitto-data:
+  mosquitto-log:
