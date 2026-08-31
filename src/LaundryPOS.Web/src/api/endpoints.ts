@@ -14,6 +14,19 @@ import type {
   ProductImportSummary,
 } from '@/types';
 
+// ─── System / Updates ───
+export const systemApi = {
+  getVersion: () => api.get<ApiResponse<{ version: string; environment: string }>>('/system/version'),
+  checkUpdate: () =>
+    api.get<ApiResponse<{ currentVersion: string; latestVersion: string; updateAvailable: boolean }>>(
+      '/system/check-update'
+    ),
+  applyUpdate: (tag?: string) =>
+    api.post<ApiResponse<unknown>>('/system/apply-update', null, { params: tag ? { tag } : undefined }),
+  getUpdateStatus: () =>
+    api.get<ApiResponse<{ running: boolean; log: string }>>('/system/update-status'),
+};
+
 // ─── Auth ───
 export const authApi = {
   login: (username: string, password: string) =>

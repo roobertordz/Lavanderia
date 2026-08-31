@@ -12,6 +12,7 @@ import { ProductsPage } from '@/pages/ProductsPage';
 import { TransactionsPage } from '@/pages/TransactionsPage';
 import { MaintenancePage } from '@/pages/MaintenancePage';
 import { ReportsPage } from '@/pages/ReportsPage';
+import { UpdatesPage } from '@/pages/UpdatesPage';
 import { Layout } from '@/components/Layout';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: UserRole[] }) {
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/transactions" element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Employee]}><TransactionsPage /></ProtectedRoute>} />
         <Route path="/maintenance"  element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Technician]}><MaintenancePage /></ProtectedRoute>} />
         <Route path="/reports"      element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor]}><ReportsPage /></ProtectedRoute>} />
+        <Route path="/updates"      element={<ProtectedRoute roles={[UserRole.Administrator]}><UpdatesPage /></ProtectedRoute>} />
 
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

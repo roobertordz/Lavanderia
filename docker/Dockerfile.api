@@ -2,6 +2,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
+# git + docker CLI: needed so this container can trigger the manual
+# self-update flow (see SystemController.cs) via the mounted docker.sock.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=docker:27-cli /usr/local/bin/docker /usr/local/bin/docker
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src

@@ -45,6 +45,13 @@ services:
       - IoT__Mqtt__BrokerPort=1883
     ports:
       - "5002:80"
+    volumes:
+      # Mounted so the API can trigger the manual self-update flow
+      # (git fetch/checkout + docker compose rebuild) via SystemController.
+      # SECURITY NOTE: this gives the api container root-equivalent control
+      # over the Docker host. Only Administrator-authenticated endpoints use it.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace
     depends_on:
       sqlserver:
         condition: service_healthy

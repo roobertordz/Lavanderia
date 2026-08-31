@@ -14,6 +14,7 @@ const navItems: { to: string; label: string; icon: string; roles?: UserRole[] }[
   { to: '/transactions', label: 'Transacciones', icon: '💳', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Employee] },
   { to: '/maintenance',  label: 'Mantenimiento',  icon: '🛠️', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Technician] },
   { to: '/reports',      label: 'Reportes',       icon: '📈', roles: [UserRole.Administrator, UserRole.Supervisor] },
+  { to: '/updates',      label: 'Actualizaciones', icon: '⬆️', roles: [UserRole.Administrator] },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
