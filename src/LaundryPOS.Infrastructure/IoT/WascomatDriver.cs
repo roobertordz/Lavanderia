@@ -10,9 +10,9 @@ namespace LaundryPOS.Infrastructure.IoT;
 /// <summary>
 /// Wascomat machine driver.
 ///
-/// Supports two integration modes, selected via the connection string prefix:
+/// Supports three integration modes, selected via the connection string prefix:
 ///
-/// 1. RELAY mode (ESP32/Arduino via HTTP REST — most common):
+/// 1. RELAY mode (ESP32/Arduino via HTTP REST):
 ///    ConnectionString = "relay:http://192.168.1.50"
 ///    The ESP32 board is wired to the machine's coin/payment input via a relay.
 ///    Each HTTP call triggers a relay pulse that simulates a coin insertion.
@@ -22,18 +22,28 @@ namespace LaundryPOS.Infrastructure.IoT;
 ///    ConnectionString = "serial:COM3:9600" or "serial:/dev/ttyUSB0:9600"
 ///    Sends ASCII framed commands directly to the machine via serial port.
 ///    Protocol: STX + MachineId(2) + Command(2) + Data(4) + Checksum(2) + ETX
+///
+/// 3. MQTT mode (ESP32 via broker — recommended, no static IP/cabling needed):
+///    ConnectionString = "mqtt:{machineId-guid}"
+///    Commands are published through MqttConnectionManager to
+///    "{BaseTopic}/machine/{machineId}/comando"; the ESP32 firmware
+///    subscribes to that topic and publishes back its status/events, which
+///    MqttConnectionManager caches and persists. See MqttConnectionManager
+///    for the exact topic/payload layout.
 /// </summary>
 public class WascomatDriver : IIoTDeviceDriver
 {
     private readonly ILogger<WascomatDriver> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IMqttPublisherService _mqttPublisher;
 
     public string DriverName => "Wascomat";
 
-    public WascomatDriver(ILogger<WascomatDriver> logger, IHttpClientFactory httpClientFactory)
+    public WascomatDriver(ILogger<WascomatDriver> logger, IHttpClientFactory httpClientFactory, IMqttPublisherService mqttPublisher)
     {
         _logger = logger;
         _httpClientFactory = httpClientFactory;
+        _mqttPublisher = mqttPublisher;
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -51,7 +61,8 @@ public class WascomatDriver : IIoTDeviceDriver
         {
             "relay"  => await RelayStartAsync(address, durationMinutes, ct),
             "serial" => await SerialCommandAsync(address, WascomatCommand.Start, durationMinutes, ct),
-            _        => Result(false, "Unknown connection mode. Use 'relay:' or 'serial:' prefix.")
+            "mqtt"   => await MqttCommandAsync(address, "iniciar", durationMinutes, ct),
+            _        => Result(false, "Unknown connection mode. Use 'relay:', 'serial:' or 'mqtt:' prefix.")
         };
     }
 
@@ -65,6 +76,7 @@ public class WascomatDriver : IIoTDeviceDriver
         {
             "relay"  => await RelayCommandAsync(address, "stop", ct),
             "serial" => await SerialCommandAsync(address, WascomatCommand.Stop, 0, ct),
+            "mqtt"   => await MqttCommandAsync(address, "detener", null, ct),
             _        => Result(false, "Unknown connection mode.")
         };
     }
@@ -79,6 +91,7 @@ public class WascomatDriver : IIoTDeviceDriver
         {
             "relay"  => await RelayCommandAsync(address, "pause", ct),
             "serial" => await SerialCommandAsync(address, WascomatCommand.Pause, 0, ct),
+            "mqtt"   => await MqttCommandAsync(address, "pausar", null, ct),
             _        => Result(false, "Unknown connection mode.")
         };
     }
@@ -89,6 +102,8 @@ public class WascomatDriver : IIoTDeviceDriver
         var (mode, address) = Parse(connectionString);
         if (mode == "relay")
             return await RelayCommandAsync(address, "restart", ct);
+        if (mode == "mqtt")
+            return await MqttCommandAsync(address, "reiniciar", null, ct);
 
         return Result(true, null); // Serial mode: no restart command
     }
@@ -114,6 +129,14 @@ public class WascomatDriver : IIoTDeviceDriver
             {
                 return new IoTHeartbeatResult { IsAlive = false, Timestamp = DateTime.UtcNow };
             }
+        }
+
+        if (mode == "mqtt")
+        {
+            // MQTT is push-based: "alive" means the ESP32 has reported its
+            // status recently (see MqttConnectionManager), not a live ping.
+            var state = Guid.TryParse(address, out var machineId) ? _mqttPublisher.GetLastKnownState(machineId) : null;
+            return new IoTHeartbeatResult { IsAlive = state?.IsAlive ?? false, Timestamp = state?.Timestamp ?? DateTime.UtcNow };
         }
 
         // Serial mode: basic port availability check
@@ -153,7 +176,45 @@ public class WascomatDriver : IIoTDeviceDriver
             }
         }
 
+        if (mode == "mqtt")
+        {
+            var state = Guid.TryParse(address, out var machineId) ? _mqttPublisher.GetLastKnownState(machineId) : null;
+            return new IoTStatusResult
+            {
+                IsRunning = state?.IsRunning ?? false,
+                RemainingMinutes = state?.RemainingMinutes,
+                CurrentState = state?.CurrentState ?? "unknown",
+                Timestamp = state?.Timestamp ?? DateTime.UtcNow
+            };
+        }
+
         return new IoTStatusResult { IsRunning = false, CurrentState = "unknown", Timestamp = DateTime.UtcNow };
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // MQTT mode (ESP32 via broker)
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// address is expected to be the machine's Guid (Machine.Id), e.g.
+    /// ConnectionString = "mqtt:3fa85f64-5717-4562-b3fc-2c963f66afa6".
+    /// </summary>
+    private async Task<IoTCommandResult> MqttCommandAsync(
+        string address, string action, int? durationMinutes, CancellationToken ct)
+    {
+        if (!Guid.TryParse(address, out var machineId))
+            return Result(false, "Para el modo 'mqtt:' la conexión debe ser el Id (Guid) de la máquina.");
+
+        try
+        {
+            await _mqttPublisher.PublishCommandAsync(machineId, action, durationMinutes, ct: ct);
+            return Result(true, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Wascomat MQTT: Error al publicar '{Action}' para {MachineId}", action, machineId);
+            return Result(false, ex.Message);
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────

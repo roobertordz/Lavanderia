@@ -95,6 +95,29 @@ public record IoTStatusResult
 }
 
 /// <summary>
+/// Publishes commands to laundry machines over MQTT and exposes the last
+/// known state reported by each machine's ESP32 controller (MQTT is
+/// push-based, so there is no live request/response call like HTTP —
+/// drivers read the last state cached from the subscribed status topic).
+/// </summary>
+public interface IMqttPublisherService
+{
+    bool IsConnected { get; }
+    Task PublishCommandAsync(Guid machineId, string action, int? durationMinutes = null, string? cycle = null, CancellationToken ct = default);
+    MqttMachineState? GetLastKnownState(Guid machineId);
+}
+
+public record MqttMachineState
+{
+    public bool IsAlive { get; init; }
+    public bool IsRunning { get; init; }
+    public string CurrentState { get; init; } = "unknown";
+    public int? RemainingMinutes { get; init; }
+    public int? CapacityKg { get; init; }
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
+
+/// <summary>
 /// Real-time notification service abstraction (SignalR, WebSocket, etc.)
 /// </summary>
 public interface IRealTimeNotificationService

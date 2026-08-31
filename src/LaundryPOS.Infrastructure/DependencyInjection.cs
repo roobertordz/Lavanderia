@@ -49,6 +49,12 @@ public static class DependencyInjection
         services.AddScoped<WascomatDriver>();
         services.AddHttpClient("WascomatRelay");
 
+        // MQTT (real-time comms with ESP32 machine controllers)
+        services.Configure<MqttOptions>(configuration.GetSection("IoT:Mqtt"));
+        services.AddSingleton<MqttConnectionManager>();
+        services.AddSingleton<IMqttPublisherService>(sp => sp.GetRequiredService<MqttConnectionManager>());
+        services.AddHostedService(sp => sp.GetRequiredService<MqttConnectionManager>());
+
         return services;
     }
 }
