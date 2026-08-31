@@ -10,6 +10,7 @@ const navItems: { to: string; label: string; icon: string; roles?: UserRole[] }[
   { to: '/dashboard', label: 'Dashboard',    icon: '📊' },
   { to: '/cobro',     label: 'Cobrar / POS',  icon: '🧺', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Cashier] },
   { to: '/products',  label: 'Productos',     icon: '🧴', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Cashier] },
+  { to: '/lavado-encargo', label: 'Lavado por Encargo', icon: '🛏️', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Cashier] },
   { to: '/machines',  label: 'Máquinas',      icon: '🔧', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Technician] },
   { to: '/transactions', label: 'Transacciones', icon: '💳', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Employee] },
   { to: '/maintenance',  label: 'Mantenimiento',  icon: '🛠️', roles: [UserRole.Administrator, UserRole.Supervisor, UserRole.Technician] },

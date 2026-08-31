@@ -221,4 +221,4 @@ npm run dev
 
 ## Licencia
 
-Propietario. Todos los derechos reservados.
+Roberto Rodriguez Ortiz. Todos los derechos reservados.

@@ -20,6 +20,7 @@ public class UnitOfWork : IUnitOfWork
     public IAuditLogRepository AuditLogs { get; }
     public IProductRepository Products { get; }
     public IStockMovementRepository StockMovements { get; }
+    public ILaundryOrderRepository LaundryOrders { get; }
 
     public UnitOfWork(LaundryDbContext context)
     {
@@ -36,6 +37,7 @@ public class UnitOfWork : IUnitOfWork
         AuditLogs = new AuditLogRepository(context);
         Products = new ProductRepository(context);
         StockMovements = new StockMovementRepository(context);
+        LaundryOrders = new LaundryOrderRepository(context);
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)

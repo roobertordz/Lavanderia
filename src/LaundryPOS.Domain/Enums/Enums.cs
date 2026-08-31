@@ -120,3 +120,20 @@ public enum StockMovementType
     Import = 4,
     Return = 5
 }
+
+// ─── Lavado por encargo (drop-off wash service) ───
+public enum LaundryOrderServiceType
+{
+    ByWeight = 0,   // Lavado por kilos de ropa
+    Comforter = 1   // Edredones / cobertores
+}
+
+public enum LaundryOrderStatus
+{
+    Received = 0,    // Recibido, pendiente de lavar
+    InProgress = 1,  // Lavando / secando / doblando
+    Ready = 2,       // Listo para entregar
+    Delivered = 3,   // Entregado al cliente
+    Cancelled = 4
+}
+

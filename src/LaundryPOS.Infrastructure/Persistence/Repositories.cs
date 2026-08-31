@@ -218,3 +218,24 @@ public class StockMovementRepository : Repository<StockMovement>, IStockMovement
         => await _dbSet.Include(m => m.User).Where(m => m.ProductId == productId).OrderByDescending(m => m.CreatedAt).ToListAsync(ct);
 }
 
+public class LaundryOrderRepository : Repository<LaundryOrder>, ILaundryOrderRepository
+{
+    public LaundryOrderRepository(LaundryDbContext context) : base(context) { }
+
+    public async Task<IReadOnlyList<LaundryOrder>> GetByBranchAsync(Guid branchId, LaundryOrderStatus? status = null, CancellationToken ct = default)
+    {
+        var query = _dbSet.Where(o => o.BranchId == branchId);
+        if (status.HasValue)
+            query = query.Where(o => o.Status == status.Value);
+
+        return await query.OrderByDescending(o => o.ReceivedAt).ToListAsync(ct);
+    }
+
+    public async Task<string> GenerateOrderNumberAsync(Guid branchId, CancellationToken ct = default)
+    {
+        var today = DateTime.UtcNow.Date;
+        var count = await _dbSet.CountAsync(o => o.BranchId == branchId && o.ReceivedAt >= today, ct);
+        return $"ENC-{today:yyyyMMdd}-{(count + 1):D5}";
+    }
+}
+

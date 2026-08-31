@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using LaundryPOS.Domain.Entities;
+using LaundryPOS.Domain.Enums;
 
 namespace LaundryPOS.Domain.Interfaces.Repositories;
 
@@ -92,6 +93,12 @@ public interface IStockMovementRepository : IRepository<StockMovement>
     Task<IReadOnlyList<StockMovement>> GetByProductAsync(Guid productId, CancellationToken ct = default);
 }
 
+public interface ILaundryOrderRepository : IRepository<LaundryOrder>
+{
+    Task<IReadOnlyList<LaundryOrder>> GetByBranchAsync(Guid branchId, LaundryOrderStatus? status = null, CancellationToken ct = default);
+    Task<string> GenerateOrderNumberAsync(Guid branchId, CancellationToken ct = default);
+}
+
 public interface IUnitOfWork : IDisposable
 {
     IMachineRepository Machines { get; }
@@ -106,6 +113,7 @@ public interface IUnitOfWork : IDisposable
     IAuditLogRepository AuditLogs { get; }
     IProductRepository Products { get; }
     IStockMovementRepository StockMovements { get; }
+    ILaundryOrderRepository LaundryOrders { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
     Task BeginTransactionAsync(CancellationToken ct = default);

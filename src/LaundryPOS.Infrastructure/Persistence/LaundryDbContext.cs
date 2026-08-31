@@ -21,6 +21,7 @@ public class LaundryDbContext : DbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<LaundryOrder> LaundryOrders => Set<LaundryOrder>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

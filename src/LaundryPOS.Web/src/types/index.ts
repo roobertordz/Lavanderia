@@ -272,3 +272,41 @@ export interface ProductImportSummary {
   errors: string[];
 }
 
+// ─── Lavado por encargo (drop-off wash orders) ───
+export enum LaundryOrderServiceType {
+  ByWeight = 0,
+  Comforter = 1,
+}
+
+export enum LaundryOrderStatus {
+  Received = 0,
+  InProgress = 1,
+  Ready = 2,
+  Delivered = 3,
+  Cancelled = 4,
+}
+
+export interface LaundryOrder {
+  id: string;
+  orderNumber: string;
+  serviceType: LaundryOrderServiceType;
+  status: LaundryOrderStatus;
+  customerName: string;
+  customerPhone?: string;
+  weightKg?: number;
+  pricePerKg?: number;
+  comforterCount?: number;
+  comforterSize?: string;
+  pricePerComforter?: number;
+  totalPrice: number;
+  paymentMethod?: PaymentMethod;
+  paymentStatus: number;
+  receivedAt: string;
+  estimatedReadyAt?: string;
+  deliveredAt?: string;
+  notes?: string;
+  branchId: string;
+  branchName: string;
+  processedByUserName?: string;
+}
+

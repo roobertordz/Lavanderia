@@ -9,6 +9,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { MachinePOSPage } from '@/pages/MachinePOSPage';
 import { MachinesPage } from '@/pages/MachinesPage';
 import { ProductsPage } from '@/pages/ProductsPage';
+import { LaundryOrdersPage } from '@/pages/LaundryOrdersPage';
 import { TransactionsPage } from '@/pages/TransactionsPage';
 import { MaintenancePage } from '@/pages/MaintenancePage';
 import { ReportsPage } from '@/pages/ReportsPage';
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/cobro"        element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Cashier]}><MachinePOSPage /></ProtectedRoute>} />
         <Route path="/machines"     element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Technician]}><MachinesPage /></ProtectedRoute>} />
         <Route path="/products"     element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Cashier]}><ProductsPage /></ProtectedRoute>} />
+        <Route path="/lavado-encargo" element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Employee, UserRole.Cashier]}><LaundryOrdersPage /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Employee]}><TransactionsPage /></ProtectedRoute>} />
         <Route path="/maintenance"  element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor, UserRole.Technician]}><MaintenancePage /></ProtectedRoute>} />
         <Route path="/reports"      element={<ProtectedRoute roles={[UserRole.Administrator, UserRole.Supervisor]}><ReportsPage /></ProtectedRoute>} />

@@ -228,3 +228,29 @@ public record ProductImportSummaryDto
     public IReadOnlyList<string> Errors { get; init; } = [];
 }
 
+// ─── LaundryOrder DTOs ("Lavado por encargo") ───
+public record LaundryOrderDto
+{
+    public Guid Id { get; init; }
+    public string OrderNumber { get; init; } = string.Empty;
+    public LaundryOrderServiceType ServiceType { get; init; }
+    public LaundryOrderStatus Status { get; init; }
+    public string CustomerName { get; init; } = string.Empty;
+    public string? CustomerPhone { get; init; }
+    public decimal? WeightKg { get; init; }
+    public decimal? PricePerKg { get; init; }
+    public int? ComforterCount { get; init; }
+    public string? ComforterSize { get; init; }
+    public decimal? PricePerComforter { get; init; }
+    public decimal TotalPrice { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+    public PaymentStatus PaymentStatus { get; init; }
+    public DateTime ReceivedAt { get; init; }
+    public DateTime? EstimatedReadyAt { get; init; }
+    public DateTime? DeliveredAt { get; init; }
+    public string? Notes { get; init; }
+    public Guid BranchId { get; init; }
+    public string BranchName { get; init; } = string.Empty;
+    public string? ProcessedByUserName { get; init; }
+}
+

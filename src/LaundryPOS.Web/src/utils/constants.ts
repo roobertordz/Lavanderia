@@ -1,4 +1,4 @@
-import { MachineStatus, MachineType, TransactionStatus, AlertSeverity, ProductCategory, StockMovementType } from '@/types';
+import { MachineStatus, MachineType, TransactionStatus, AlertSeverity, ProductCategory, StockMovementType, LaundryOrderServiceType, LaundryOrderStatus } from '@/types';
 
 export const machineStatusLabels: Record<MachineStatus, string> = {
   [MachineStatus.Available]: 'Disponible',
@@ -86,3 +86,24 @@ export function formatDate(date: string): string {
     minute: '2-digit',
   });
 }
+
+export const laundryOrderServiceTypeLabels: Record<LaundryOrderServiceType, string> = {
+  [LaundryOrderServiceType.ByWeight]: 'Por kilo',
+  [LaundryOrderServiceType.Comforter]: 'Edredón',
+};
+
+export const laundryOrderStatusLabels: Record<LaundryOrderStatus, string> = {
+  [LaundryOrderStatus.Received]: 'Recibido',
+  [LaundryOrderStatus.InProgress]: 'En proceso',
+  [LaundryOrderStatus.Ready]: 'Listo para entregar',
+  [LaundryOrderStatus.Delivered]: 'Entregado',
+  [LaundryOrderStatus.Cancelled]: 'Cancelado',
+};
+
+export const laundryOrderStatusColors: Record<LaundryOrderStatus, string> = {
+  [LaundryOrderStatus.Received]: 'bg-blue-100 text-blue-800',
+  [LaundryOrderStatus.InProgress]: 'bg-indigo-100 text-indigo-800',
+  [LaundryOrderStatus.Ready]: 'bg-green-100 text-green-800',
+  [LaundryOrderStatus.Delivered]: 'bg-gray-100 text-gray-800',
+  [LaundryOrderStatus.Cancelled]: 'bg-red-100 text-red-800',
+};

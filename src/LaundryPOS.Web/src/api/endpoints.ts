@@ -12,6 +12,8 @@ import type {
   Product,
   StockMovement,
   ProductImportSummary,
+  LaundryOrder,
+  LaundryOrderStatus,
 } from '@/types';
 
 // ─── System / Updates ───
@@ -157,4 +159,22 @@ export const productsApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+};
+
+// ─── Lavado por encargo (drop-off wash orders) ───
+export const laundryOrdersApi = {
+  getByBranch: (branchId: string, status?: LaundryOrderStatus) =>
+    api.get<ApiResponse<LaundryOrder[]>>(`/laundryorders/branch/${branchId}`, {
+      params: status !== undefined ? { status } : undefined,
+    }),
+  getById: (id: string) =>
+    api.get<ApiResponse<LaundryOrder>>(`/laundryorders/${id}`),
+  create: (data: Record<string, unknown>) =>
+    api.post<ApiResponse<LaundryOrder>>('/laundryorders', data),
+  updateStatus: (id: string, status: LaundryOrderStatus) =>
+    api.patch<ApiResponse<LaundryOrder>>(`/laundryorders/${id}/status`, { status }),
+  registerPayment: (id: string, paymentMethod: number) =>
+    api.post<ApiResponse<LaundryOrder>>(`/laundryorders/${id}/payment`, { paymentMethod }),
+  delete: (id: string) =>
+    api.delete(`/laundryorders/${id}`),
 };

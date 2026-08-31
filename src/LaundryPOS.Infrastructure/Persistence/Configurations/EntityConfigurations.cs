@@ -248,3 +248,25 @@ public class StockMovementConfiguration : IEntityTypeConfiguration<StockMovement
     }
 }
 
+public class LaundryOrderConfiguration : IEntityTypeConfiguration<LaundryOrder>
+{
+    public void Configure(EntityTypeBuilder<LaundryOrder> builder)
+    {
+        builder.ToTable("LaundryOrders");
+        builder.HasKey(o => o.Id);
+        builder.Property(o => o.OrderNumber).IsRequired().HasMaxLength(50);
+        builder.Property(o => o.CustomerName).IsRequired().HasMaxLength(200);
+        builder.Property(o => o.CustomerPhone).HasMaxLength(30);
+        builder.Property(o => o.ComforterSize).HasMaxLength(50);
+        builder.Property(o => o.Notes).HasMaxLength(1000);
+        builder.Property(o => o.WeightKg).HasPrecision(10, 2);
+        builder.Property(o => o.PricePerKg).HasPrecision(10, 2);
+        builder.Property(o => o.PricePerComforter).HasPrecision(10, 2);
+        builder.Property(o => o.TotalPrice).HasPrecision(10, 2);
+        builder.HasIndex(o => o.OrderNumber).IsUnique();
+        builder.HasOne(o => o.Branch).WithMany().HasForeignKey(o => o.BranchId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(o => o.ProcessedByUser).WithMany().HasForeignKey(o => o.ProcessedByUserId).OnDelete(DeleteBehavior.SetNull);
+        builder.HasQueryFilter(o => !o.IsDeleted);
+    }
+}
+
